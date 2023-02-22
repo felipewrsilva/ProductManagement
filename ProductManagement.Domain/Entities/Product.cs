@@ -1,4 +1,4 @@
-﻿using ProductManagement.Domain.Common;
+﻿using ProductManagement.Domain.Enums;
 using System;
 
 namespace ProductManagement.Domain.Entities
@@ -16,6 +16,6 @@ namespace ProductManagement.Domain.Entities
         public DateTime ManufactureDate { get; set; }
         public DateTime ExpirationDate { get; set; }
         public int SupplierId { get; set; }
-        public Supplier Supplier { get; set; }
+        public virtual Supplier Supplier { get; set; }
     }
 }
