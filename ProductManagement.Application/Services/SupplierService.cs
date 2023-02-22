@@ -5,7 +5,6 @@ using ProductManagement.Application.Interfaces;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Infrastructure;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ProductManagement.Application.Services
@@ -21,19 +20,19 @@ namespace ProductManagement.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<SupplierDTO>> GetSuppliersAsync()
+        public async Task<IEnumerable<SupplierDTO>> GetAsync()
         {
             var suppliers = await _context.Suppliers.ToListAsync();
             return _mapper.Map<IEnumerable<SupplierDTO>>(suppliers);
         }
 
-        public async Task<SupplierDTO> GetSupplierByIdAsync(int id)
+        public async Task<SupplierDTO> GetByIdAsync(int id)
         {
             var supplier = await _context.Suppliers.FindAsync(id);
             return _mapper.Map<SupplierDTO>(supplier);
         }
 
-        public async Task<SupplierDTO> CreateSupplierAsync(SupplierDTO supplierDto)
+        public async Task<SupplierDTO> CreateAsync(SupplierDTO supplierDto)
         {
             var supplier = _mapper.Map<Supplier>(supplierDto);
             _context.Suppliers.Add(supplier);
@@ -41,9 +40,9 @@ namespace ProductManagement.Application.Services
             return _mapper.Map<SupplierDTO>(supplier);
         }
 
-        public async Task<SupplierDTO> UpdateSupplierAsync(int id, SupplierDTO supplierDto)
+        public async Task<SupplierDTO> UpdateAsync(SupplierDTO supplierDto)
         {
-            var supplier = await _context.Suppliers.FindAsync(id);
+            var supplier = await _context.Suppliers.FindAsync(supplierDto.Id);
             if (supplier == null)
                 return null;
 
@@ -52,7 +51,7 @@ namespace ProductManagement.Application.Services
             return _mapper.Map<SupplierDTO>(supplier);
         }
 
-        public async Task<bool> DeleteSupplierAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var supplier = await _context.Suppliers.FindAsync(id);
             if (supplier == null)
