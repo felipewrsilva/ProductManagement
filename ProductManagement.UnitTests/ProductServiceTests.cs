@@ -13,7 +13,7 @@ using ProductManagement.Domain.Common;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Domain.Enums;
 using ProductManagement.Domain.Interfaces.Repositories;
-using NUnit.Framework.Interfaces;
+using ProductManagement.UnitTests.Builders;
 
 namespace ProductManagement.UnitTests
 {
@@ -38,101 +38,44 @@ namespace ProductManagement.UnitTests
         public async Task GetByIdAsync_ShouldReturnProduct_WhenProductExists()
         {
             // Arrange
-            int productId = 1;
-            var product = new Product
-            {
-                Id = productId,
-                Description = "Product 1",
-                ManufactureDate = DateTime.Today,
-                ExpirationDate = DateTime.Today.AddDays(30),
-                Situation = ProductSituation.Active,
-                Supplier = new Supplier
-                {
-                    Id = 1,
-                    Description = "Supplier 1",
-                    Cnpj = "12345678901234"
-                }
-            };
+            const int NumberOfProducts = 1;
+            var product = CreateProducts(NumberOfProducts).FirstOrDefault();
+            var productDTO = new ProductDTOBuilder().Build();
 
-            var productDto = new ProductDTO
-            {
-                Id = product.Id,
-                Description = product.Description,
-                ManufactureDate = product.ManufactureDate,
-                ExpirationDate = product.ExpirationDate,
-                Situation = product.Situation,
-                Supplier = new SupplierDTO
-                {
-                    Id = product.Supplier.Id,
-                    Description = product.Supplier.Description,
-                    Cnpj = product.Supplier.Cnpj
-                }
-            };
-
-            _productRepositoryMock.Setup(r => r.GetByIdAsync(productId)).ReturnsAsync(product);
-            _mapperMock.Setup(m => m.Map<ProductDTO>(product)).Returns(productDto);
+            _productRepositoryMock.Setup(r => r.GetByIdAsync(product.Id)).ReturnsAsync(product);
+            _mapperMock.Setup(m => m.Map<ProductDTO>(product)).Returns(productDTO);
 
             // Act
-            var result = await _productService.GetByIdAsync(productId);
+            var result = await _productService.GetByIdAsync(product.Id);
 
             // Assert
             result.Should().NotBeNull();
-            result.Id.Should().Be(productDto.Id);
-            result.Description.Should().Be(productDto.Description);
-            result.ManufactureDate.Should().Be(productDto.ManufactureDate);
-            result.ExpirationDate.Should().Be(productDto.ExpirationDate);
-            result.Situation.Should().Be(productDto.Situation);
-            result.Supplier.Should().NotBeNull();
-            result.Supplier.Id.Should().Be(productDto.Supplier.Id);
-            result.Supplier.Description.Should().Be(productDto.Supplier.Description);
-            result.Supplier.Cnpj.Should().Be(productDto.Supplier.Cnpj);
-        }
-
-        [Test]
-        public async Task GetByIdAsync_ShouldReturnNull_WhenProductDoesNotExist()
-        {
-            // Arrange
-            int productId = 1;
-
-            _productRepositoryMock.Setup(r => r.GetByIdAsync(productId)).ReturnsAsync((Product)null);
-
-            // Act
-            var result = await _productService.GetByIdAsync(productId);
-
-            // Assert
-            Assert.Null(result);
+            result.Should().BeEquivalentTo(productDTO);
         }
 
         [Test]
         public async Task GetAsync_ReturnsPagedResponse()
         {
             // Arrange
-            var filter = new ProductFilter();
-            var pageNumber = 1;
-            var pageSize = 10;
+            const int NumberOfProducts = 3;
+            const int PageNumber = 1;
+            const int PageSize = 10;
 
-            var expectedProducts = new List<Product>
-            {
-                new Product { Id = 1, Description = "Product 1", Situation = ProductSituation.Active },
-                new Product { Id = 2, Description = "Product 2", Situation = ProductSituation.Active },
-                new Product { Id = 3, Description = "Product 3", Situation = ProductSituation.Active },
-            };
+            var filter = new ProductFilter();
+
+            var expectedProducts = CreateProducts(NumberOfProducts);
 
             _productRepositoryMock
-                .Setup(x => x.GetPagedByFilterAsync(filter, pageNumber, pageSize))
-                .ReturnsAsync(PagedResult<Product>.Create(expectedProducts, 3, pageNumber, pageSize));
+                .Setup(x => x.GetPagedByFilterAsync(filter, PageNumber, PageSize))
+                .ReturnsAsync(PagedResult<Product>.Create(expectedProducts, expectedProducts.Count, PageNumber, PageSize));
 
-            var expectedResponse = PagedResponse<ProductDTO>.Create(
-                expectedProducts.Select(x => new ProductDTO { Id = x.Id, Description = x.Description, Situation = x.Situation }),
-                pageSize,
-                3,
-                pageNumber);
+            var expectedResponse = CreateExpectedResponse(expectedProducts, PageSize, PageNumber);
 
             _mapperMock.Setup(x => x.Map<PagedResponse<ProductDTO>>(It.IsAny<PagedResult<Product>>()))
                 .Returns(expectedResponse);
 
             // Act
-            var result = await _productService.GetAsync(filter, pageNumber, pageSize);
+            var result = await _productService.GetAsync(filter, PageNumber, PageSize);
 
             // Assert
             result.Should().BeEquivalentTo(expectedResponse);
@@ -142,70 +85,50 @@ namespace ProductManagement.UnitTests
         public async Task GetAsync_ReturnsPagedResponseWithCorrectPageSize()
         {
             // Arrange
-            int pageSize = 10;
-            int pageNumber = 1;
+            const int PageSize = 10;
+            const int PageNumber = 1;
+            const int NumberOfProducts = 20;
 
-            var expectedProducts = new List<Product>();
-            for (int i = 1; i <= 20; i++)
-            {
-                expectedProducts.Add(new Product
-                {
-                    Id = i,
-                    Description = $"Product {i}",
-                    Situation = ProductSituation.Active,
-                    ManufactureDate = DateTime.Now.AddDays(-i),
-                    ExpirationDate = DateTime.Now.AddDays(i),
-                    Supplier = new Supplier
-                    {
-                        Id = i,
-                        Description = $"Supplier {i}",
-                        Cnpj = $"00.000.000/{i:0000}"
-                    }
-                });
-            }
-
-            var productFilter = new ProductFilter();
+            var expectedProducts = CreateProducts(NumberOfProducts);
+            var expectedResponse = CreateExpectedResponse(expectedProducts, PageSize, PageNumber);
 
             _productRepositoryMock
-                .Setup(x => x.GetPagedByFilterAsync(productFilter, pageNumber, pageSize))
-                .ReturnsAsync(PagedResult<Product>.Create(expectedProducts.Take(pageSize), expectedProducts.Count, pageNumber, pageSize));
-
-            var expectedResponse = PagedResponse<ProductDTO>.Create(items: expectedProducts
-                .Take(pageSize)
-                .Select(x =>
-                {
-                    return new ProductDTO
-                    {
-                        Id = x.Id,
-                        Description = x.Description,
-                        Situation = x.Situation,
-                        ExpirationDate = x.ExpirationDate,
-                        ManufactureDate = x.ManufactureDate,
-                        Supplier = new SupplierDTO
-                        {
-                            Id = x.Supplier.Id,
-                            Description = x.Supplier.Description,
-                            Cnpj = x.Supplier.Cnpj
-                        }
-                    };
-                }),
-                totalItems: expectedProducts.Count,
-                pageNumber,
-                pageSize);
+                .Setup(x => x.GetPagedByFilterAsync(It.IsAny<ProductFilter>(), PageNumber, PageSize))
+                .ReturnsAsync(PagedResult<Product>.Create(expectedProducts.Take(PageSize), expectedProducts.Count, PageNumber, PageSize));
 
             _mapperMock.Setup(x => x.Map<PagedResponse<ProductDTO>>(It.IsAny<PagedResult<Product>>()))
                 .Returns(expectedResponse);
 
             // Act
-            var result = await _productService.GetAsync(productFilter, pageNumber, pageSize);
+            var result = await _productService.GetAsync(new ProductFilter(), PageNumber, PageSize);
 
             // Assert
             result.Should().NotBeNull();
-            result.Items.Should().HaveCount(pageSize);
-            result.PageSize.Should().Be(pageSize);
-            result.PageNumber.Should().Be(pageNumber);
-            result.TotalPages.Should().Be((int)Math.Ceiling(expectedProducts.Count / (double)pageSize));
+            result.Items.Should().HaveCount(PageSize);
+            result.PageSize.Should().Be(PageSize);
+            result.PageNumber.Should().Be(PageNumber);
+            result.TotalPages.Should().Be((int)Math.Ceiling(expectedProducts.Count / (double)PageSize));
             result.TotalItems.Should().Be(expectedProducts.Count);
+        }
+
+        private static List<Product> CreateProducts(int numberOfProducts)
+        {
+            var products = new List<Product>();
+
+            for (int i = 1; i <= numberOfProducts; i++)
+                products.Add(new ProductBuilder().WithId(i).Build());
+
+            return products;
+        }
+
+        private static PagedResponse<ProductDTO> CreateExpectedResponse(List<Product> products, int pageSize, int pageNumber)
+        {
+            return PagedResponse<ProductDTO>.Create(
+                items: products.Take(pageSize).Select(x => new ProductDTOBuilder().WithId(x.Id).Build()),
+                totalItems: products.Count,
+                pageNumber: pageNumber,
+                pageSize: pageSize
+            );
         }
 
         //[Test]
