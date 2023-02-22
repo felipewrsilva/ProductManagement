@@ -17,10 +17,11 @@ namespace ProductManagement.Infrastructure.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task CreateAsync(Product product)
+        public async Task<bool> CreateAsync(Product product)
         {
             await _dbContext.Products.AddAsync(product);
-            await _dbContext.SaveChangesAsync();
+            var result = await _dbContext.SaveChangesAsync();
+            return result > 0;
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -36,44 +37,41 @@ namespace ProductManagement.Infrastructure.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<Product>> GetByFilterAsync(ProductFilter productFilter)
-        {
-            var query = _dbContext.Products.AsQueryable();
-
-            if (!string.IsNullOrEmpty(productFilter.Description))
-                query = query.Where(p => p.Description.Contains(productFilter.Description));
-
-            if (productFilter.Id.HasValue)
-                query = query.Where(p => p.Id == productFilter.Id);
-
-            if (productFilter.SupplierId.HasValue)
-                query = query.Where(p => p.SupplierId == productFilter.SupplierId.Value);
-
-            return await query.ToListAsync();
-        }
-
         public async Task<Product> GetByIdAsync(int id)
         {
             return await _dbContext.Products.FindAsync(id);
         }
 
-        public async Task<IEnumerable<Product>> GetBySupplierIdAsync(int supplierId)
-        {
-            return await _dbContext.Products.Where(p => p.SupplierId == supplierId).ToListAsync();
-        }
-
         public async Task<PagedResult<Product>> GetPagedByFilterAsync(ProductFilter productFilter, int pageIndex, int pageSize)
         {
-            var query = _dbContext.Products.AsQueryable();  
+            var query = _dbContext.Products.AsQueryable();
 
-            if (!string.IsNullOrEmpty(productFilter.Description))
-                query = query.Where(p => p.Description.Contains(productFilter.Description));
+            if (!string.IsNullOrEmpty(productFilter.ProductDescription))
+                query = query.Where(p => p.Description.Contains(productFilter.ProductDescription));
 
-            if (productFilter.Id.HasValue)
-                query = query.Where(p => p.Id == productFilter.Id);
+            if (productFilter.ProductId.HasValue)
+                query = query.Where(p => p.Id == productFilter.ProductId);
+
+            if (productFilter.ProductSituation.HasValue)
+                query = query.Where(p => p.Situation == productFilter.ProductSituation.Value);
+
+            if (productFilter.ProductManufactureDate.HasValue)
+                query = query.Where(p => p.ManufactureDate == productFilter.ProductManufactureDate.Value);
+
+            if (productFilter.ProductExpirationDate.HasValue)
+                query = query.Where(p => p.ExpirationDate == productFilter.ProductExpirationDate.Value);
 
             if (productFilter.SupplierId.HasValue)
-                query = query.Where(p => p.SupplierId == productFilter.SupplierId.Value);
+                query = query.Where(p => p.Supplier.Id == productFilter.SupplierId.Value);
+
+            if (!string.IsNullOrEmpty(productFilter.SupplierDescription))
+                query = query.Where(p => p.Supplier.Description.Equals(productFilter.SupplierDescription));
+
+            if (!string.IsNullOrEmpty(productFilter.SupplierCnpj))
+                query = query.Where(p => p.Supplier.Description.Equals(productFilter.SupplierCnpj));
+
+            if (!string.IsNullOrEmpty(productFilter.ProductDescription))
+                query = query.Where(p => p.Description.Contains(productFilter.ProductDescription));
 
             var totalCount = await query.CountAsync();
 
@@ -81,13 +79,14 @@ namespace ProductManagement.Infrastructure.Repositories
                                       .Take(pageSize)
                                       .ToListAsync();
 
-            return new PagedResult<Product>(pageIndex, pageSize, totalCount, products);
+            return PagedResult<Product>.Create(products, totalCount, pageIndex, pageSize);
         }
 
-        public async Task UpdateAsync(Product product)
+        public async Task<bool> UpdateAsync(Product product)
         {
             _dbContext.Entry(product).State = EntityState.Modified;
-            await _dbContext.SaveChangesAsync();
+            var result = await _dbContext.SaveChangesAsync();
+            return result > 0;
         }
     }
 }
