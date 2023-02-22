@@ -13,6 +13,7 @@ using ProductManagement.Domain.Common;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Domain.Enums;
 using ProductManagement.Domain.Interfaces.Repositories;
+using NUnit.Framework.Interfaces;
 
 namespace ProductManagement.UnitTests
 {
@@ -144,10 +145,10 @@ namespace ProductManagement.UnitTests
             int pageSize = 10;
             int pageNumber = 1;
 
-            var products = new List<Product>();
+            var expectedProducts = new List<Product>();
             for (int i = 1; i <= 20; i++)
             {
-                products.Add(new Product
+                expectedProducts.Add(new Product
                 {
                     Id = i,
                     Description = $"Product {i}",
@@ -162,18 +163,38 @@ namespace ProductManagement.UnitTests
                     }
                 });
             }
+
             var productFilter = new ProductFilter();
 
-            // Set up mock
-            _productService.Setup(x => x.GetAsync(productFilter, pageNumber, pageSize))
-                .ReturnsAsync(new PagedResponse<Product>
+            _productRepositoryMock
+                .Setup(x => x.GetPagedByFilterAsync(productFilter, pageNumber, pageSize))
+                .ReturnsAsync(PagedResult<Product>.Create(expectedProducts.Take(pageSize), expectedProducts.Count, pageNumber, pageSize));
+
+            var expectedResponse = PagedResponse<ProductDTO>.Create(items: expectedProducts
+                .Take(pageSize)
+                .Select(x =>
                 {
-                    Items = products.Take(pageSize),
-                    TotalItems = products.Count,
-                    PageNumber = pageNumber,
-                    PageSize = pageSize,
-                    TotalPages = (int)Math.Ceiling(products.Count / (double)pageSize)
-                });
+                    return new ProductDTO
+                    {
+                        Id = x.Id,
+                        Description = x.Description,
+                        Situation = x.Situation,
+                        ExpirationDate = x.ExpirationDate,
+                        ManufactureDate = x.ManufactureDate,
+                        Supplier = new SupplierDTO
+                        {
+                            Id = x.Supplier.Id,
+                            Description = x.Supplier.Description,
+                            Cnpj = x.Supplier.Cnpj
+                        }
+                    };
+                }),
+                totalItems: expectedProducts.Count,
+                pageNumber,
+                pageSize);
+
+            _mapperMock.Setup(x => x.Map<PagedResponse<ProductDTO>>(It.IsAny<PagedResult<Product>>()))
+                .Returns(expectedResponse);
 
             // Act
             var result = await _productService.GetAsync(productFilter, pageNumber, pageSize);
@@ -183,8 +204,8 @@ namespace ProductManagement.UnitTests
             result.Items.Should().HaveCount(pageSize);
             result.PageSize.Should().Be(pageSize);
             result.PageNumber.Should().Be(pageNumber);
-            result.TotalPages.Should().Be((int)Math.Ceiling(products.Count / (double)pageSize));
-            result.TotalItems.Should().Be(products.Count);
+            result.TotalPages.Should().Be((int)Math.Ceiling(expectedProducts.Count / (double)pageSize));
+            result.TotalItems.Should().Be(expectedProducts.Count);
         }
 
         //[Test]

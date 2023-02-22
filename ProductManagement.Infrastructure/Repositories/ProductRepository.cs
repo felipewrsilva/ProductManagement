@@ -46,9 +46,6 @@ namespace ProductManagement.Infrastructure.Repositories
         {
             var query = _dbContext.Products.AsQueryable();
 
-            if (!string.IsNullOrEmpty(productFilter.ProductDescription))
-                query = query.Where(p => p.Description.Contains(productFilter.ProductDescription));
-
             if (productFilter.ProductId.HasValue)
                 query = query.Where(p => p.Id == productFilter.ProductId);
 
@@ -56,10 +53,12 @@ namespace ProductManagement.Infrastructure.Repositories
                 query = query.Where(p => p.Situation == productFilter.ProductSituation.Value);
 
             if (productFilter.ProductManufactureDate.HasValue)
-                query = query.Where(p => p.ManufactureDate == productFilter.ProductManufactureDate.Value);
+                query = query.Where(p => p.ManufactureDate >= productFilter.ProductManufactureDate.Value.Date
+                                         && p.ManufactureDate < productFilter.ProductManufactureDate.Value.Date.AddDays(1));
 
             if (productFilter.ProductExpirationDate.HasValue)
-                query = query.Where(p => p.ExpirationDate == productFilter.ProductExpirationDate.Value);
+                query = query.Where(p => p.ExpirationDate >= productFilter.ProductExpirationDate.Value.Date
+                                         && p.ExpirationDate < productFilter.ProductExpirationDate.Value.Date.AddDays(1));
 
             if (productFilter.SupplierId.HasValue)
                 query = query.Where(p => p.Supplier.Id == productFilter.SupplierId.Value);
@@ -68,7 +67,7 @@ namespace ProductManagement.Infrastructure.Repositories
                 query = query.Where(p => p.Supplier.Description.Equals(productFilter.SupplierDescription));
 
             if (!string.IsNullOrEmpty(productFilter.SupplierCnpj))
-                query = query.Where(p => p.Supplier.Description.Equals(productFilter.SupplierCnpj));
+                query = query.Where(p => p.Supplier.Cnpj.Equals(productFilter.SupplierCnpj));
 
             if (!string.IsNullOrEmpty(productFilter.ProductDescription))
                 query = query.Where(p => p.Description.Contains(productFilter.ProductDescription));
