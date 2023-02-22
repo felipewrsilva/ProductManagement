@@ -64,7 +64,7 @@ namespace ProductManagement.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> Delete(int id)
         {
-            var result = await _productService.DeleteAsync(id);
+            var result = await _productService.DeactivateAsync(id);
             if (result)
                 return NoContent();
             return NotFound();

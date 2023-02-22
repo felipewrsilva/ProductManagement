@@ -10,6 +10,6 @@ namespace ProductManagement.Application.Interfaces
         Task<ProductDTO> GetByIdAsync(int id);
         Task<ProductDTO> CreateAsync(ProductDTO productDto);
         Task<ProductDTO> UpdateAsync(ProductDTO productDto);
-        Task<bool> DeleteAsync(int id);
+        Task<bool> DeactivateAsync(int id);
     }
 }

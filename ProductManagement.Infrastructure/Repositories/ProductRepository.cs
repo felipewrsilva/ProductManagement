@@ -24,7 +24,7 @@ namespace ProductManagement.Infrastructure.Repositories
             return result > 0;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeactivateAsync(int id)
         {
             var product = await GetByIdAsync(id);
 

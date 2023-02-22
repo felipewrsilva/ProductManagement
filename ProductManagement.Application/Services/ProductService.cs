@@ -64,7 +64,7 @@ namespace ProductManagement.Application.Services
             return productDto;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeactivateAsync(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)

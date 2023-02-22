@@ -13,6 +13,8 @@ using ProductManagement.Domain.Common;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Domain.Interfaces.Repositories;
 using ProductManagement.UnitTests.Builders;
+using FluentValidation.Results;
+using ProductManagement.Domain.Enums;
 
 namespace ProductManagement.UnitTests
 {
@@ -107,6 +109,77 @@ namespace ProductManagement.UnitTests
             result.PageNumber.Should().Be(PageNumber);
             result.TotalPages.Should().Be((int)Math.Ceiling(expectedProducts.Count / (double)PageSize));
             result.TotalItems.Should().Be(expectedProducts.Count);
+        }
+
+        [Test]
+        public async Task CreateAsync_ShouldCreateProduct_WhenValidProductIsProvided()
+        {
+            // Arrange
+            var product = new ProductBuilder().Build();
+            var productDTO = new ProductDTOBuilder().WithId(product.Id).Build();
+
+            _mapperMock.Setup(m => m.Map<Product>(productDTO)).Returns(product);
+            _productRepositoryMock.Setup(x => x.CreateAsync(product)).ReturnsAsync(true);
+            _productValidatorMock.Setup(v => v.Validate(product)).Returns(new ValidationResult());
+
+            // Act
+            var result = await _productService.CreateAsync(productDTO).ConfigureAwait(false);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(productDTO);
+            _productRepositoryMock.Verify(r => r.CreateAsync(product), Times.Once);
+        }
+
+        [Test]
+        public async Task UpdateAsync_ShouldUpdateProduct_WhenValidProductIsProvided()
+        {
+            // Arrange
+            var productDTO = new ProductDTOBuilder().Build();
+            var product = new ProductBuilder().WithId(productDTO.Id).Build();
+
+            _mapperMock.Setup(m => m.Map<Product>(productDTO)).Returns(product);
+            _productRepositoryMock.Setup(r => r.UpdateAsync(product)).ReturnsAsync(true);
+            _productValidatorMock.Setup(v => v.Validate(product)).Returns(new ValidationResult());
+
+            // Act
+            var result = await _productService.UpdateAsync(productDTO).ConfigureAwait(false);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(productDTO);
+            _productRepositoryMock.Verify(r => r.UpdateAsync(product), Times.Once);
+        }
+
+        [Test]
+        public async Task DeactivateAsync_ShouldMarkProductAsInactive_WhenValidProductIdIsProvided()
+        {
+            // Arrange
+            var product = new ProductBuilder().Build();
+            _productRepositoryMock.Setup(r => r.GetByIdAsync(product.Id)).ReturnsAsync(product);
+            _productRepositoryMock.Setup(r => r.UpdateAsync(It.Is<Product>(p => p.Id == product.Id)))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _productService.DeactivateAsync(product.Id);
+
+            // Assert
+            result.Should().BeTrue();
+            _productRepositoryMock.Verify(r => r.UpdateAsync(It.Is<Product>(p => p.Id == product.Id && p.Situation == ProductSituation.Inactive)), Times.Once);
+        }
+
+        [Test]
+        public async Task GetByIdAsync_ShouldReturnNull_WhenProductDoesNotExist()
+        {
+            // Arrange
+            var productId = 1;
+            _productRepositoryMock.Setup(r => r.GetByIdAsync(productId)).ReturnsAsync((Product)null);
+
+            // Act
+            var result = await _productService.GetByIdAsync(productId).ConfigureAwait(false);
+
+            // Assert
+            result.Should().BeNull();
         }
 
         private static List<Product> CreateProducts(int numberOfProducts)
