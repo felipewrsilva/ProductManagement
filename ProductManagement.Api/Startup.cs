@@ -14,6 +14,7 @@ using ProductManagement.Application.Profiles;
 using FluentValidation;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Domain.Validators;
+using ProductManagement.Application.AutoMapperProfiles;
 
 namespace ProductManagement.Api
 {
@@ -40,7 +41,7 @@ namespace ProductManagement.Api
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ISupplierService, SupplierService>();
             services.AddDbContext<ProductDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ProductDatabase")));
-            services.AddAutoMapper(typeof(ProductProfile), typeof(SupplierProfile));
+            services.AddAutoMapper(typeof(ProductProfile), typeof(SupplierProfile), typeof(PagedProfile));
             services.AddTransient<IValidator<Product>, ProductValidator>();
         }
 
