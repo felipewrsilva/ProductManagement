@@ -1,10 +1,9 @@
 ﻿using ProductManagement.Application.DTOs;
 using ProductManagement.Domain.Entities;
 using ProductManagement.Domain.Enums;
-using ProductManagement.UnitTests.Builders;
 using System;
 
-namespace ProductManagement.UnitTests
+namespace ProductManagement.UnitTests.Builders
 {
     internal class ProductDTOBuilder
     {

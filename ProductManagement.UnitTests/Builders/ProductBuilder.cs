@@ -21,7 +21,7 @@ namespace ProductManagement.UnitTests.Builders
                 {
                     Id = 1,
                     Description = "Supplier 1",
-                    Cnpj = "12345678901234"
+                    Cnpj = "36.294.739/0001-09"
                 }
             };
         }
@@ -29,6 +29,9 @@ namespace ProductManagement.UnitTests.Builders
         public ProductBuilder WithId(int id)
         {
             _product.Id = id;
+            _product.Description = $"Product {id}";
+            _product.Supplier.Description = $"Supplier {id}";
+            _product.Supplier.Cnpj = $"36.294.739/{id:0000}-09";
             return this;
         }
 

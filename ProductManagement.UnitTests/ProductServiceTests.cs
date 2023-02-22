@@ -11,7 +11,6 @@ using ProductManagement.Application.DTOs;
 using ProductManagement.Application.Services;
 using ProductManagement.Domain.Common;
 using ProductManagement.Domain.Entities;
-using ProductManagement.Domain.Enums;
 using ProductManagement.Domain.Interfaces.Repositories;
 using ProductManagement.UnitTests.Builders;
 
@@ -38,15 +37,14 @@ namespace ProductManagement.UnitTests
         public async Task GetByIdAsync_ShouldReturnProduct_WhenProductExists()
         {
             // Arrange
-            const int NumberOfProducts = 1;
-            var product = CreateProducts(NumberOfProducts).FirstOrDefault();
-            var productDTO = new ProductDTOBuilder().Build();
+            var product = new ProductBuilder().Build();
+            var productDTO = new ProductDTOBuilder().WithId(product.Id).Build();
 
             _productRepositoryMock.Setup(r => r.GetByIdAsync(product.Id)).ReturnsAsync(product);
             _mapperMock.Setup(m => m.Map<ProductDTO>(product)).Returns(productDTO);
 
             // Act
-            var result = await _productService.GetByIdAsync(product.Id);
+            var result = await _productService.GetByIdAsync(product.Id).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -75,7 +73,7 @@ namespace ProductManagement.UnitTests
                 .Returns(expectedResponse);
 
             // Act
-            var result = await _productService.GetAsync(filter, PageNumber, PageSize);
+            var result = await _productService.GetAsync(filter, PageNumber, PageSize).ConfigureAwait(false);
 
             // Assert
             result.Should().BeEquivalentTo(expectedResponse);
@@ -100,7 +98,7 @@ namespace ProductManagement.UnitTests
                 .Returns(expectedResponse);
 
             // Act
-            var result = await _productService.GetAsync(new ProductFilter(), PageNumber, PageSize);
+            var result = await _productService.GetAsync(new ProductFilter(), PageNumber, PageSize).ConfigureAwait(false);
 
             // Assert
             result.Should().NotBeNull();
@@ -130,71 +128,5 @@ namespace ProductManagement.UnitTests
                 pageSize: pageSize
             );
         }
-
-        //[Test]
-        //public async Task GetAsync_ReturnsPagedResponseWithCorrectPageNumber()
-        //{
-
-        //}
-
-        //[Test]
-        //public async Task GetAsync_ReturnsPagedResponseWithCorrectData()
-        //{
-
-        //}
-
-        //[Test]
-        //public async Task GetByIdAsync_ReturnsProductDTO()
-        //{
-
-        //}
-
-        //[Test]
-        //public async Task GetByIdAsync_ReturnsNullWhenNotFound()
-        //{
-
-        //}
-
-        //[Test]
-        //public async Task CreateAsync_ThrowsValidationException_WhenDateOfManufactureIsGreaterThanExpirationDate()
-        //{
-
-        //}
-
-        //[Test]
-        //public async Task CreateAsync_CreatesProductAndReturnsProductDTO()
-        //{
-
-        //}
-
-        //[Test]
-        //public async Task UpdateAsync_ThrowsValidationException_WhenDateOfManufactureIsGreaterThanExpirationDate()
-        //{
-
-        //}
-
-        //[Test]
-        //public async Task UpdateAsync_ReturnsNullWhenProductNotFound()
-        //{
-
-        //}
-
-        //[Test]
-        //public async Task UpdateAsync_UpdatesProductAndReturnsProductDTO()
-        //{
-
-        //}
-
-        //[Test]
-        //public async Task DeleteAsync_ReturnsFalseWhenProductNotFound()
-        //{
-
-        //}
-
-        //[Test]
-        //public async Task DeleteAsync_LogicallyDeletesProductAndReturnsTrue()
-        //{
-
-        //}
     }
 }
