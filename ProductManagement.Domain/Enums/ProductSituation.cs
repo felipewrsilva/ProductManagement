@@ -1,4 +1,4 @@
-﻿namespace ProductManagement.Domain.Common
+﻿namespace ProductManagement.Domain.Enums
 {
     public enum ProductSituation
     {
