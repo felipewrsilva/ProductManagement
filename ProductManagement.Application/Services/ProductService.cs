@@ -4,6 +4,7 @@ using ProductManagement.Application.DTOs;
 using ProductManagement.Application.Interfaces;
 using ProductManagement.Domain.Common;
 using ProductManagement.Domain.Entities;
+using ProductManagement.Domain.Enums;
 using ProductManagement.Domain.Interfaces.Repositories;
 using System.Threading.Tasks;
 
@@ -22,19 +23,18 @@ namespace ProductManagement.Application.Services
             _productValidator = productValidator;
         }
 
-        public async Task<PagedResponse<ProductDTO>> GetProductsAsync(ProductFilter filter, int pageNumber, int pageSize)
+        public async Task<PagedResponse<ProductDTO>> GetAsync(ProductFilter filter, int pageNumber, int pageSize)
         {
             var products = await _productRepository.GetPagedByFilterAsync(filter, pageNumber, pageSize);
 
             var productsDto = _mapper.Map<PagedResponse<ProductDTO>>(products);
             productsDto.PageNumber = pageNumber;
             productsDto.PageSize = pageSize;
-            productsDto.TotalItems = products.TotalCount;
 
             return productsDto;
         }
 
-        public async Task<ProductDTO> GetProductByIdAsync(int id)
+        public async Task<ProductDTO> GetByIdAsync(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
             var productDto = _mapper.Map<ProductDTO>(product);
@@ -42,34 +42,39 @@ namespace ProductManagement.Application.Services
             return productDto;
         }
 
-        public async Task<ProductDTO> CreateProductAsync(ProductDTO productDto)
+        public async Task<ProductDTO> CreateAsync(ProductDTO productDto)
         {
             var product = _mapper.Map<Product>(productDto);
 
-            ValidateProduct(product);
+            Validate(product);
 
             await _productRepository.CreateAsync(product);
 
             return productDto;
         }
 
-        public async Task<ProductDTO> UpdateProductAsync(int id, ProductDTO productDto)
+        public async Task<ProductDTO> UpdateAsync(ProductDTO productDto)
         {
             var product = _mapper.Map<Product>(productDto);
 
-            ValidateProduct(product);
+            Validate(product);
 
             await _productRepository.UpdateAsync(product);
 
             return productDto;
         }
 
-        public async Task<bool> DeleteProductAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            return await _productRepository.DeleteAsync(id);
+            var product = await _productRepository.GetByIdAsync(id);
+            if (product == null)
+                return false;
+
+            product.Situation = ProductSituation.Inactive;
+            return await _productRepository.UpdateAsync(product);
         }
 
-        private void ValidateProduct(Product product)
+        private void Validate(Product product)
         {
             var validationResult = _productValidator.Validate(product);
             if (!validationResult.IsValid)
