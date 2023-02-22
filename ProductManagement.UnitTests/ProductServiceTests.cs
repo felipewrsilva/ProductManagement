@@ -75,15 +75,16 @@ namespace ProductManagement.UnitTests
             var result = await _productService.GetByIdAsync(productId);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.AreEqual(productDto.Id, result.Id);
-            Assert.AreEqual(productDto.Description, result.Description);
-            Assert.AreEqual(productDto.ManufactureDate, result.ManufactureDate);
-            Assert.AreEqual(productDto.ExpirationDate, result.ExpirationDate);
-            Assert.AreEqual(productDto.Situation, result.Situation);
-            Assert.AreEqual(productDto.Supplier.Id, result.Supplier.Id);
-            Assert.AreEqual(productDto.Supplier.Description, result.Supplier.Description);
-            Assert.AreEqual(productDto.Supplier.Cnpj, result.Supplier.Cnpj);
+            result.Should().NotBeNull();
+            result.Id.Should().Be(productDto.Id);
+            result.Description.Should().Be(productDto.Description);
+            result.ManufactureDate.Should().Be(productDto.ManufactureDate);
+            result.ExpirationDate.Should().Be(productDto.ExpirationDate);
+            result.Situation.Should().Be(productDto.Situation);
+            result.Supplier.Should().NotBeNull();
+            result.Supplier.Id.Should().Be(productDto.Supplier.Id);
+            result.Supplier.Description.Should().Be(productDto.Supplier.Description);
+            result.Supplier.Cnpj.Should().Be(productDto.Supplier.Cnpj);
         }
 
         [Test]
@@ -109,7 +110,6 @@ namespace ProductManagement.UnitTests
             var pageNumber = 1;
             var pageSize = 10;
 
-
             var expectedProducts = new List<Product>
             {
                 new Product { Id = 1, Description = "Product 1", Situation = ProductSituation.Active },
@@ -127,14 +127,14 @@ namespace ProductManagement.UnitTests
                 3,
                 pageNumber);
 
+            _mapperMock.Setup(x => x.Map<PagedResponse<ProductDTO>>(It.IsAny<PagedResult<Product>>()))
+                .Returns(expectedResponse);
+
             // Act
             var result = await _productService.GetAsync(filter, pageNumber, pageSize);
 
             // Assert
-            Assert.IsInstanceOf<PagedResponse<ProductDTO>>(result);
-            Assert.AreEqual(3, result.Items.Count());
-            Assert.AreEqual(pageNumber, result.PageNumber);
-            Assert.AreEqual(pageSize, result.PageSize);
+            result.Should().BeEquivalentTo(expectedResponse);
         }
 
         [Test]
@@ -162,8 +162,18 @@ namespace ProductManagement.UnitTests
                     }
                 });
             }
-
             var productFilter = new ProductFilter();
+
+            // Set up mock
+            _productService.Setup(x => x.GetAsync(productFilter, pageNumber, pageSize))
+                .ReturnsAsync(new PagedResponse<Product>
+                {
+                    Items = products.Take(pageSize),
+                    TotalItems = products.Count,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalPages = (int)Math.Ceiling(products.Count / (double)pageSize)
+                });
 
             // Act
             var result = await _productService.GetAsync(productFilter, pageNumber, pageSize);
