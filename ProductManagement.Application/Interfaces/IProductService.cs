@@ -6,10 +6,10 @@ namespace ProductManagement.Application.Interfaces
 {
     public interface IProductService
     {
-        Task<PagedResponse<ProductDTO>> GetProductsAsync(ProductFilter filter, int pageNumber, int pageSize);
-        Task<ProductDTO> GetProductByIdAsync(int id);
-        Task<ProductDTO> CreateProductAsync(ProductDTO productDto);
-        Task<ProductDTO> UpdateProductAsync(int id, ProductDTO productDto);
-        Task<bool> DeleteProductAsync(int id);
+        Task<PagedResponse<ProductDTO>> GetAsync(ProductFilter filter, int pageNumber, int pageSize);
+        Task<ProductDTO> GetByIdAsync(int id);
+        Task<ProductDTO> CreateAsync(ProductDTO productDto);
+        Task<ProductDTO> UpdateAsync(ProductDTO productDto);
+        Task<bool> DeleteAsync(int id);
     }
 }
