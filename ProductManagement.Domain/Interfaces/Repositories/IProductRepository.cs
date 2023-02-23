@@ -8,7 +8,7 @@ namespace ProductManagement.Domain.Interfaces.Repositories
     {
         Task<Product> GetByIdAsync(int id);
         Task<PagedResult<Product>> GetPagedByFilterAsync(ProductFilter productFilter, int page, int pageSize);
-        Task<bool> CreateAsync(Product product);
+        Task<bool> AddAsync(Product product);
         Task<bool> UpdateAsync(Product product);
         Task<bool> RemoveAsync(int id);
     }

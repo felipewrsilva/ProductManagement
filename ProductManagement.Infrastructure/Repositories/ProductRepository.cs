@@ -16,7 +16,7 @@ namespace ProductManagement.Infrastructure.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<bool> CreateAsync(Product product)
+        public async Task<bool> AddAsync(Product product)
         {
             await _dbContext.Products.AddAsync(product);
             var result = await _dbContext.SaveChangesAsync();
