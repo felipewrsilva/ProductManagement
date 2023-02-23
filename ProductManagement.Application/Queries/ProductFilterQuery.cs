@@ -8,9 +8,16 @@ namespace ProductManagement.Application.Queries
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
 
-        public ProductFilterQuery(ProductFilter productFilter = null, int pageNumber = 1, int pageSize = 10)
+        public ProductFilterQuery()
         {
-            ProductFilter = productFilter ?? new ProductFilter();
+            ProductFilter = new ProductFilter();
+            PageNumber = 1;
+            PageSize = 10;
+        }
+
+        public ProductFilterQuery(ProductFilter productFilter, int pageNumber, int pageSize)
+        {
+            ProductFilter = productFilter;
             PageNumber = pageNumber;
             PageSize = pageSize;
         }

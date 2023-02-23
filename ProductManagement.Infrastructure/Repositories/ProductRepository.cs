@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ProductManagement.Domain.Common;
@@ -24,7 +23,7 @@ namespace ProductManagement.Infrastructure.Repositories
             return result > 0;
         }
 
-        public async Task<bool> DeactivateAsync(int id)
+        public async Task<bool> RemoveAsync(int id)
         {
             var product = await GetByIdAsync(id);
 
@@ -39,12 +38,12 @@ namespace ProductManagement.Infrastructure.Repositories
 
         public async Task<Product> GetByIdAsync(int id)
         {
-            return await _dbContext.Products.FindAsync(id);
+            return await _dbContext.Products.Include(p => p.Supplier).SingleOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<PagedResult<Product>> GetPagedByFilterAsync(ProductFilter productFilter, int pageIndex, int pageSize)
         {
-            var query = _dbContext.Products.AsQueryable();
+            var query = _dbContext.Products.Include(p => p.Supplier).AsQueryable();
 
             if (productFilter.ProductId.HasValue)
                 query = query.Where(p => p.Id == productFilter.ProductId);

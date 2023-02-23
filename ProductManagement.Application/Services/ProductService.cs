@@ -50,7 +50,7 @@ namespace ProductManagement.Application.Services
 
             await _productRepository.CreateAsync(product);
 
-            return productDto;
+            return _mapper.Map<ProductDTO>(product);
         }
 
         public async Task<ProductDTO> UpdateAsync(ProductDTO productDto)
