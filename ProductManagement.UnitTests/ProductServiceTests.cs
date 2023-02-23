@@ -112,14 +112,15 @@ namespace ProductManagement.UnitTests
         }
 
         [Test]
-        public async Task CreateAsync_ShouldCreateProduct_WhenValidProductIsProvided()
+        public async Task AddAsync_ShouldCreateProduct_WhenValidProductIsProvided()
         {
             // Arrange
             var product = new ProductBuilder().Build();
             var productDTO = new ProductDTOBuilder().WithId(product.Id).Build();
 
             _mapperMock.Setup(m => m.Map<Product>(productDTO)).Returns(product);
-            _productRepositoryMock.Setup(x => x.CreateAsync(product)).ReturnsAsync(true);
+            _mapperMock.Setup(m => m.Map<ProductDTO>(product)).Returns(productDTO);
+            _productRepositoryMock.Setup(x => x.AddAsync(product)).ReturnsAsync(true);
             _productValidatorMock.Setup(v => v.Validate(product)).Returns(new ValidationResult());
 
             // Act
@@ -128,7 +129,7 @@ namespace ProductManagement.UnitTests
             // Assert
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(productDTO);
-            _productRepositoryMock.Verify(r => r.CreateAsync(product), Times.Once);
+            _productRepositoryMock.Verify(r => r.AddAsync(product), Times.Once);
         }
 
         [Test]

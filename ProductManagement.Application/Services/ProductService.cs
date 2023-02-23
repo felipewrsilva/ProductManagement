@@ -48,7 +48,7 @@ namespace ProductManagement.Application.Services
 
             Validate(product);
 
-            await _productRepository.CreateAsync(product);
+            await _productRepository.AddAsync(product);
 
             return _mapper.Map<ProductDTO>(product);
         }
