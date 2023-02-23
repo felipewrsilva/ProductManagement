@@ -1,19 +1,26 @@
-﻿using System;
+﻿using ProductManagement.Domain.Enums;
+using System;
 
 namespace ProductManagement.Domain.Common
 {
     public class ProductFilter
     {
-        public int? Id { get; set; }
-        public string Description { get; set; }
-        public bool? Active { get; set; }
-        public DateTime? ManufacturingDate { get; set; }
-        public DateTime? ExpirationDate { get; set; }
+        public int? ProductId { get; set; }
+        public string ProductDescription { get; set; }
+        public ProductSituation? ProductSituation { get; set; }
+        public DateTime? ProductManufactureDate { get; set; }
+        public DateTime? ProductExpirationDate { get; set; }
         public int? SupplierId { get; set; }
-        public string SupplierName { get; set; }
+        public string SupplierDescription { get; set; }
         public string SupplierCnpj { get; set; }
 
-        public int PageNumber { get; set; } = 1;
-        public int PageSize { get; set; } = 10;
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
+
+        public ProductFilter()
+        {
+            PageNumber = 1;
+            PageSize = 10;
+        }
     }
 }

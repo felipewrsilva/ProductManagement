@@ -1,16 +1,25 @@
 ﻿using ProductManagement.Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProductManagement.Application.Queries
 {
     public class ProductFilterQuery
     {
         public ProductFilter ProductFilter { get; set; }
-        public int PageNumber { get; set; } = 1;
-        public int PageSize { get; set; } = 10;
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
+
+        public ProductFilterQuery()
+        {
+            ProductFilter = new ProductFilter();
+            PageNumber = 1;
+            PageSize = 10;
+        }
+
+        public ProductFilterQuery(ProductFilter productFilter, int pageNumber, int pageSize)
+        {
+            ProductFilter = productFilter;
+            PageNumber = pageNumber;
+            PageSize = pageSize;
+        }
     }
 }

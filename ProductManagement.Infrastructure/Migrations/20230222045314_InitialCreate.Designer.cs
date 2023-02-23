@@ -10,7 +10,7 @@ using ProductManagement.Infrastructure;
 namespace ProductManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(ProductDbContext))]
-    [Migration("20230221003447_InitialCreate")]
+    [Migration("20230222045314_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

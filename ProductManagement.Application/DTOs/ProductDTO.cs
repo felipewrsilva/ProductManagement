@@ -1,4 +1,4 @@
-﻿using ProductManagement.Domain.Common;
+﻿using ProductManagement.Domain.Enums;
 using System;
 
 namespace ProductManagement.Application.DTOs
